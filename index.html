@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UniCad — Unified Academic Data System</title>
+  <!-- Bootstrap CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; --card:#fff; --muted:#6b7280; --accent:#0d6efd;
+    }
+    html,body{height:100%;}
+    body{font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#2a2140 0%,#0b1220 100%);margin:0;color:#fff;padding-bottom:96px}
+    .navbar{background:linear-gradient(90deg,#0d6efd,#6c8cff);box-shadow:0 8px 30px rgba(7,10,22,0.35);padding:.5rem 1rem}
+    .navbar-brand{color:#fff;font-weight:700}
+    .hamburger-wrap{width:44px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;border:none}
+    .hamburger-lines{position:relative;width:24px;height:2px;background:#fff;border-radius:2px;transition:transform .22s,opacity .22s}
+    .hamburger-lines::before,.hamburger-lines::after{content:"";position:absolute;width:24px;height:2px;background:#fff;border-radius:2px;transition:transform .22s,top .22s}
+    .hamburger-lines::before{top:-8px}
+    .hamburger-lines::after{top:8px}
+    .hamburger-wrap.active .hamburger-lines{background:transparent}
+    .hamburger-wrap.active .hamburger-lines::before{transform:rotate(45deg) translate(2px,2px);top:0}
+    .hamburger-wrap.active .hamburger-lines::after{transform:rotate(-45deg) translate(2px,-2px);top:0}
+    .hamburger-x{display:none;color:#fff;font-weight:700;font-size:18px}
+    .hamburger-wrap.active .hamburger-x{display:inline-block;margin-left:6px}
+
+    .offcanvas-custom{width:320px;position:fixed;top:0;left:0;height:100%;background:#071022;transform:translateX(-110%);transition:transform .28s;z-index:1050;color:#fff;padding-bottom:60px}
+    .offcanvas-custom.show{transform:translateX(0)}
+    .offcanvas-custom .list-group-item{border:none;border-radius:8px;margin-bottom:6px;background:#0b1220;color:#fff}
+    .app-wrap{max-width:1100px;margin:24px auto;padding:18px}
+    .module-card{border-radius:12px;padding:18px;background:var(--card);color:#0b1220;box-shadow:0 8px 24px rgba(2,6,23,0.12);min-height:110px}
+    .module-hero{border-radius:14px;padding:16px;background:linear-gradient(180deg,#fff,#f3f6ff)}
+    .muted{color:#9aa4b2;font-size:13px}
+    .hidden{display:none!important}
+    .login-card{background:#fff;color:#0b1220;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,0.25)}
+
+    /* Cards for image content mimic */
+    .feature-card{background:#fff;border-radius:10px;padding:14px;color:#0b1220;box-shadow:0 8px 20px rgba(2,6,23,0.06)}
+    .feature-title{font-weight:700;margin-bottom:6px}
+    .kpi{font-size:22px;font-weight:700}
+    .kpi-sub{color:#6b7280}
+
+    @media(max-width:991px){.navbar .collapse{display:none!important}.app-wrap{padding:12px;margin:12px}}
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="mainNav" class="navbar hidden">
+    <div class="container-fluid d-flex align-items-center gap-2">
+      <button id="hamburgerBtn" class="hamburger-wrap" aria-label="Toggle menu">
+        <span class="hamburger-lines"></span>
+        <span class="hamburger-x">✖️</span>
+      </button>
+      <a class="navbar-brand ms-1" href="#" onclick="go('#dashboard')">UniCad — ISMS</a>
+      <div class="collapse navbar-collapse d-none d-lg-flex justify-content-end">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-light btn-sm" onclick="go('#dashboard')">Dashboard</button>
+          <button class="btn btn-outline-light btn-sm" onclick="go('#registrar')">Registrar</button>
+          <button class="btn btn-outline-warning btn-sm" onclick="go('#teacher')">Teacher</button>
+          <button class="btn btn-outline-success btn-sm" onclick="go('#cashier')">Cashier</button>
+          <div class="vr" style="height:28px;opacity:.6"></div>
+          <div id="navUser" class="d-flex align-items-center gap-2">
+            <span id="navUserEmail" class="muted"></span>
+            <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR (offcanvas) -->
+  <aside id="sidebar" class="offcanvas-custom">
+    <div class="p-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">UniCad Menu</h5>
+      <button id="closeSidebar" class="btn-close" aria-label="Close"></button>
+    </div>
+    <div class="p-3">
+      <div class="mb-3"><div class="tiny muted">Signed in as</div><div id="offcanvasUser" class="fw-semibold"></div></div>
+      <div class="list-group mb-3">
+        <a href="#" class="list-group-item list-group-item-action" onclick="navFromSidebar('#dashboard')">Dashboard</a>
+        <a href="#" class="list-group-item list-group-item-action" onclick="navFromSidebar('#registrar')">Registrar</a>
+        <a href="#" class="list-group-item list-group-item-action" onclick="navFromSidebar('#teacher')">Teacher</a>
+        <a href="#" class="list-group-item list-group-item-action" onclick="navFromSidebar('#cashier')">Cashier</a>
+      </div>
+      <button class="btn btn-danger w-100" onclick="doLogout()">Logout</button>
+    </div>
+  </aside>
+
+  <!-- LOGIN PAGE -->
+  <main id="loginPage" class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-7 col-lg-5">
+        <div class="login-card text-center p-4">
+          <h3 class="mb-3">UniCad Login</h3>
+          <input type="email" id="email" class="form-control mb-2" placeholder="Email">
+          <input type="password" id="password" class="form-control mb-3" placeholder="Password">
+          <button id="loginBtn" class="btn btn-primary w-100 mb-2">Login</button>
+          <button id="loginAnonBtn" class="btn btn-outline-secondary w-100 mb-2 tiny">Login (Guest)</button>
+          <div class="text-muted small">Use your institutional email to see role-based dashboards.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- APP CONTENT -->
+  <section id="app" class="app-wrap hidden">
+
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h2 class="mb-0">Overview</h2>
+          <div class="muted">Welcome to UniCad — Unified Academic Data System</div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-md-4"><div class="module-card text-center"><div class="kpi">15,430</div><div class="kpi-sub">Students</div></div></div>
+        <div class="col-md-4"><div class="module-card text-center"><div class="kpi">1,024</div><div class="kpi-sub">Courses</div></div></div>
+        <div class="col-md-4"><div class="module-card text-center"><div class="kpi">₱ 2,180,450</div><div class="kpi-sub">Payments</div></div></div>
+      </div>
+
+      <!-- Role based preview panels inspired from screenshots -->
+      <div class="row g-3 mt-4">
+        <div class="col-lg-6">
+          <div class="feature-card">
+            <h4 class="feature-title">Student Enrollment Statistics</h4>
+            <p class="muted">Undergraduate enrollment decreased 15% from 18.1M in 2010 to 15.4M in 2021. A 9% increase is projected by 2031, reaching 16.8M. (82.9% Undergraduate, 17.1% Graduate)</p>
+            <small class="muted">Quick snapshot of trending enrollment for academic planning and reporting.</small>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="feature-card">
+            <h4 class="feature-title">Key Dashboard Features</h4>
+            <ul class="mb-0">
+              <li>Course management & scheduling tools</li>
+              <li>Academic records access</li>
+              <li>Admissions application status</li>
+              <li>Quick actions for common tasks</li>
+              <li>Reporting and analytics</li>
+            </ul>
+            <small class="muted">Empowering students and staff with comprehensive tools for academic management.</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- REGISTRAR MODULE -->
+    <div id="registrar" class="hidden">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h3 class="mb-0">Registrar Dashboard Overview</h3>
+          <div class="muted">Showcasing key functions and quick actions for registrar staff</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <div class="feature-card">
+            <h4 class="feature-title">Student Enrollment Statistics</h4>
+            <p class="muted">A visual KPI for undergraduate and graduate enrollment trends. Use filters to view by year, program, campus, or demographic segment.</p>
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+              <button class="btn btn-outline-primary" onclick="alert('New admission flow')">New Admission</button>
+              <button class="btn btn-outline-primary" onclick="alert('Verify documents flow')">Verify Documents</button>
+              <button class="btn btn-outline-primary" onclick="alert('Update record flow')">Update Student Record</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="feature-card">
+            <h5 class="feature-title">Quick Actions</h5>
+            <ul class="mb-0">
+              <li>Search student by ID or name</li>
+              <li>Download academic transcript</li>
+              <li>Manage enrollment statuses</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-12">
+          <div class="feature-card">
+            <h5 class="feature-title">Benefits of Role-Based Interfaces</h5>
+            <ul>
+              <li>Enhanced security and granular access controls</li>
+              <li>Streamlined management for provisioning and de-provisioning</li>
+              <li>Operational efficiency — reduces manual tasks</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TEACHER MODULE -->
+    <div id="teacher" class="hidden">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h3 class="mb-0">Teacher Portal Features</h3>
+          <div class="muted">Centralized tools for educators & classroom management</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Class Schedule & Rosters</h6>
+            <p class="muted small mb-0">Manage attendance, view academic calendars, organize class lists.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Student Progress Tracking</h6>
+            <p class="muted small mb-0">Monitor profiles, track grades & performance, access behavioral logs.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Assignment & Grading</h6>
+            <p class="muted small mb-0">Digital assignment submissions, gradebooks, and feedback tools.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Communication Tools</h6>
+            <p class="muted small mb-0">Message students & parents, send class announcements, maintain contact logs.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Resource Sharing & Uploads</h6>
+            <p class="muted small mb-0">Upload lessons & materials, share digital resources, plan lessons.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Empower Teachers</h6>
+            <p class="muted small mb-0">Seamless access to essential tools for daily tasks and parent interaction.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CASHIER MODULE -->
+    <div id="cashier" class="hidden">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h3 class="mb-0">Cashier Interface & Functionality</h3>
+          <div class="muted">Financial operations, invoices, and refunds</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Payment Processing & Transaction History</h6>
+            <p class="muted small mb-0">Manage payments, authorizations, and settlements for all transactions.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Student Account Balances</h6>
+            <p class="muted small mb-0">Track financial standings, tuition payments, and outstanding amounts.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="feature-card">
+            <h6 class="feature-title">Invoice Generation & Refunds</h6>
+            <p class="muted small mb-0">Create/manage invoices, automate billing, and process refunds efficiently.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-12">
+          <div class="feature-card">
+            <h6 class="feature-title">Financial Reporting & Fee Configuration</h6>
+            <ul class="mb-0">
+              <li>Financial reporting, reconciliation, and audits</li>
+              <li>Define fee types, discounts, and payment plans</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase config (kept from provided config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGN_51BbyP0SmOPPMlKqmbiEmxjnShodw",
+      authDomain: "portfolio-1278c.firebaseapp.com",
+      projectId: "portfolio-1278c",
+      storageBucket: "portfolio-1278c.firebasestorage.app",
+      messagingSenderId: "883720203287",
+      appId: "1:883720203287:web:7a8bfccbe0c90a508b0052",
+      measurementId: "G-YYF991F19K"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // UI elements
+    const loginPage = document.getElementById('loginPage');
+    const app = document.getElementById('app');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.getElementById('sidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const offcanvasUser = document.getElementById('offcanvasUser');
+    const navUserEmail = document.getElementById('navUserEmail');
+
+    // Login
+    document.getElementById('loginBtn').addEventListener('click', ()=>{
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if(!email || !password){alert('Please enter email and password');return}
+      auth.signInWithEmailAndPassword(email,password)
+        .catch(err=>alert(err.message));
+    });
+
+    document.getElementById('loginAnonBtn').addEventListener('click', ()=>{
+      auth.signInAnonymously().catch(err=>alert(err.message));
+    });
+
+    // Logout helper used both in offcanvas and nav
+    function doLogout(){
+      auth.signOut().catch(err=>alert(err.message));
+    }
+
+    // Auth state listener
+    auth.onAuthStateChanged(user=>{
+      if(user){
+        // show app
+        loginPage.classList.add('hidden');
+        app.classList.remove('hidden');
+        document.getElementById('mainNav').classList.remove('hidden');
+
+        const email = user.email || (user.isAnonymous? 'Guest' : 'Unknown');
+        offcanvasUser.textContent = email;
+        navUserEmail.textContent = email;
+
+        // Determine roles for demo (in real app use claims or firestore role document)
+        // For demo: emails containing 'registrar' => Registrar, 'teacher' => Teacher, 'cashier' => Cashier
+        let role = 'dashboard';
+        if(!user.isAnonymous && user.email){
+          const e = user.email.toLowerCase();
+          if(e.includes('registrar')) role = 'registrar';
+          else if(e.includes('teacher')) role = 'teacher';
+          else if(e.includes('cashier')) role = 'cashier';
+          else role = 'dashboard';
+        }
+
+        // show role-specific module by default
+        go(role==='dashboard'? '#dashboard' : '#'+role);
+
+      } else {
+        // show login
+        app.classList.add('hidden');
+        loginPage.classList.remove('hidden');
+        document.getElementById('mainNav').classList.add('hidden');
+      }
+    });
+
+    // Hamburger & sidebar
+    hamburgerBtn.addEventListener('click', ()=>{
+      hamburgerBtn.classList.toggle('active');
+      sidebar.classList.toggle('show');
+    });
+    closeSidebarBtn.addEventListener('click', ()=>{ sidebar.classList.remove('show'); hamburgerBtn.classList.remove('active'); });
+
+    function navFromSidebar(targetId){
+      document.querySelectorAll('#app > div').forEach(d=>d.classList.add('hidden'));
+      document.querySelector(targetId).classList.remove('hidden');
+      sidebar.classList.remove('show'); hamburgerBtn.classList.remove('active');
+    }
+
+    function go(targetId){
+      document.querySelectorAll('#app > div').forEach(d=>d.classList.add('hidden'));
+      const el = document.querySelector(targetId);
+      if(el) el.classList.remove('hidden');
+    }
+
+    // small convenience: logout btn in top nav
+    document.getElementById('logoutBtn').addEventListener('click', doLogout);
+
+    // Accessibility: Enter key on password triggers login
+    document.getElementById('password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('loginBtn').click() });
+
+  </script>
+</body>
+</html>
